@@ -1,0 +1,1 @@
+# captacao_temperatura
