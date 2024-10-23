@@ -1,10 +1,11 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from openpyxl import load_workbook
 import openpyxl
 import datetime
-import time
 from tkinter import *
 import mysql.connector
 
@@ -28,17 +29,18 @@ class Aplicacao:
         mainloop()
         
     # para realizar a captacão das informacões no site com o selenium
-    def importar():
+    def importar(self):
         driver = webdriver.Chrome(executable_path='/caminho/para/chromedriver')
         
         #navegar até o site
         driver.get('https://www.climatempo.com.br/previsao-do-tempo/15-dias/cidade/558/saopaulo-sp')
         
         #esperar o site carregar
-        time.sleep(5)
+        tabela = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, '//*[@id="//*[@id="first-block-of-days"]/div[4]/section[1]"]' ))
+        )
         
         #extrair uma tabela
-        tabela = driver.find_element(By.XPATH, '//*[@id="tabela-id"]')
         linhas = tabela.find_elements(By.TAG_NAME, "tr")
         
         #extrair os dados da tabela
@@ -50,6 +52,8 @@ class Aplicacao:
         #fechar o navegador
         driver.quit()
         
+        return dados
+        
     def criar_tabela():
         #criar um novo arquivo
         wb = openpyxl.Workbook()
@@ -57,7 +61,7 @@ class Aplicacao:
         
         #adicionar dados à planilha
         # ********* ADICIONAR CAMINHO DOS DADOS
-        dados = 0 
+        dados = [] 
         for linha in dados:
             ws.append(linha)
         
@@ -85,7 +89,7 @@ class Aplicacao:
                        """)
 
         #inserir no banco os dados extraídos
-        dados = 0
+        dados = []
         for linha in dados:
             cursor.execute("""
                 INSERT INTO dados_temp_sp (coluna1, coluna2, coluna3)
