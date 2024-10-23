@@ -18,7 +18,9 @@ class Aplicacao:
         self.layout.geometry("350x60")
         self.tela = Frame(self.layout)
         self.descricao = Label(self.tela, text="Para gerar arquivos em formato .csv")
-        self.exportar = Button(self.tela, text="Clique aqui")
+        
+        #vincular o botão à funcão que cria a tabela e insere os dados
+        self.exportar = Button(self.tela, text="Clique aqui", command=self.executar)
         
         #alocacão dos elementos na tela
         self.tela.pack()
@@ -68,7 +70,7 @@ class Aplicacao:
         #salvar o arquivo excel   
         wb.save('dados_extraidos.xlsx')
         
-    def inserir_dados():
+    def inserir_dados(self, dados):
         #conectar ao banco de dados mysql
         conexao = mysql.connector.connect(
             host = '172.0.0.1',
@@ -82,9 +84,9 @@ class Aplicacao:
         #criar uma tabela no mysql
         cursor.execute("""
             CREATE TABLE IF NOT EXIST dados_temp_sp (
-                data_hora DATETIME,
-                temperatura FLOAT,
-                umidade_do_ar FLOAT
+                data_hora VARCHAR(255),
+                temperatura VARCHAR(255),
+                umidade_do_ar VARCHAR(255)
             )
                        """)
 
