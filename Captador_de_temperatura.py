@@ -105,6 +105,12 @@ class Aplicacao:
         cursor.close()
         conexao.close()
         
+    def executar(self):
+        #funcão para criar tabela ao clicar no botão
+        dados = self.importar()
+        
+        self.inserir_dados(dados)
+        
 tl = Aplicacao()
 
 
