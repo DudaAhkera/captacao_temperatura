@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -32,7 +33,10 @@ class Aplicacao:
         
     # para realizar a captacão das informacões no site com o selenium
     def importar(self):
-        driver = webdriver.Chrome(executable_path='/caminho/para/chromedriver')
+        # Definir o caminho para o chromedriver
+        s = Service('/caminho/para/chromedriver')
+        
+        driver = webdriver.Chrome(service=s)
         
         #navegar até o site
         driver.get('https://www.climatempo.com.br/previsao-do-tempo/15-dias/cidade/558/saopaulo-sp')
