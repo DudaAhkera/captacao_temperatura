@@ -71,7 +71,7 @@ class Aplicacao:
         #buscarelemento temperatura
         self.temp = driver.find_element(By.XPATH, '//*[@id="wob_tm"]').text
         #buscar elemento umidade
-        self.umi = driver.find_element(By.XPATH, '//*[@id="wob_wc"]/div[1]/div[2]/div[2]').text
+        self.umi = driver.find_element(By.XPATH, '//*[@id="wob_hm"]').text
         
         print(f"Hoje {self.dt} a temperatura está {self.temp}ºC e a umidade do ar é de {self.umi}!")
 
