@@ -2,13 +2,13 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from openpyxl import load_workbook
 import openpyxl
-import datetime
 from tkinter import *
 import mysql.connector
+import chromedriver_autoinstaller
+
 
 class Aplicacao:
     def __init__(self):
@@ -34,86 +34,47 @@ class Aplicacao:
     # para realizar a captacão das informacões no site com o selenium
     def importar(self):
         # Definir o caminho para o chromedriver
-        s = Service('/caminho/para/chromedriver')
+        chromedriver_autoinstaller.install()
         
-        driver = webdriver.Chrome(service=s)
+        driver = webdriver.Chrome()
         
         #navegar até o site
-        driver.get('https://www.climatempo.com.br/previsao-do-tempo/15-dias/cidade/558/saopaulo-sp')
+        driver.get('https://www.google.com.br/')
         
-        #esperar o site carregar
-        tabela = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, '//*[@id="//*[@id="first-block-of-days"]/div[4]/section[1]"]' ))
-        )
+        #achar elemento de input e escrever clima
+        driver.find_element(By.XPATH, '//*[@id="APjFqb"]').send_keys('clima')
         
-        #extrair uma tabela
-        linhas = tabela.find_elements(By.TAG_NAME, "tr")
+        #clicar no botão de pesquisar
+        driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/form/div[1]/div[1]/div[4]/center/input[1]').send_keys(Keys.ENTER)
         
-        #extrair os dados da tabela
-        dados = []
-        for linha in linhas:
-            colunas = linha.find_elements(By.TAG_NAME, "td")
-            dados.append([coluna.text for coluna in colunas])
-            
+        #buscar elemento data/hora
+        dt = driver.find_element(By.XPATH, '//*[@id="wob_dts"]').get_attribute('value')
+        #buscarelemento temperatura
+        temp = driver.find_element(By.XPATH, '//*[@id="wob_tm"]').get_attribute('value')
+        #buscar elemento umidade
+        umi = driver.find_element(By.XPATH, '//*[@id="wob_wc"]/div[1]/div[2]/div[2]').get_attribute('value')
+        
+        
+        print(f"Hoje {dt} a temperatura está {temp} e a umidade do ar é de {umi}%!")
+        
+        arquivo = load_workbook('Dados_clima.xlsx')
+        
+        pln = arquivo['lista']
+        
+        pln.cell(row=2, column=1).value = dt
+        
+        pln.cell(row=2, column=2).value = temp
+        
+        pln.cell(row=2, column=3).value = umi
+
         #fechar o navegador
         driver.quit()
         
-        return dados
+        #return dados
+        arquivo.save('Dados_clima.xlsx')
         
-    def criar_tabela():
-        #criar um novo arquivo
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        
-        #adicionar dados à planilha
-        # ********* ADICIONAR CAMINHO DOS DADOS
-        dados = [] 
-        for linha in dados:
-            ws.append(linha)
-        
-        #salvar o arquivo excel   
-        wb.save('dados_extraidos.xlsx')
-        
-    def inserir_dados(self, dados):
-        #conectar ao banco de dados mysql
-        conexao = mysql.connector.connect(
-            host = '172.0.0.1',
-            user = 'root',
-            password = 'Zulenice20@',
-            db = "dados_temp_sp"
-        )
-        
-        cursor = conexao.cursor()
-        
-        #criar uma tabela no mysql
-        cursor.execute("""
-            CREATE TABLE IF NOT EXIST dados_temp_sp (
-                data_hora VARCHAR(255),
-                temperatura VARCHAR(255),
-                umidade_do_ar VARCHAR(255)
-            )
-                       """)
-
-        #inserir no banco os dados extraídos
-        dados = []
-        for linha in dados:
-            cursor.execute("""
-                INSERT INTO dados_temp_sp (coluna1, coluna2, coluna3)
-                VALUES (%s, %s, %s)
-                           """, linha)
-        
-        #confirmar a insercão
-        conexao.commit()
-        
-        #fechar a conexão
-        cursor.close()
-        conexao.close()
-        
-    def executar(self):
-        #funcão para criar tabela ao clicar no botão
-        dados = self.importar()
-        
-        self.inserir_dados(dados)
+        print('Planilha atualizada com sucesso!')
+    
         
 tl = Aplicacao()
 
